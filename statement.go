@@ -1,6 +1,7 @@
 package query
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/Delisa-sama/stmt-builder/nodes"
@@ -16,18 +17,35 @@ type Operator interface {
 }
 
 func NewStatement(leftOperand string, op Operator, rightOperand any) Statement {
-	s := Statement{}
-	var rightNode nodes.Node
-	switch typedOperand := rightOperand.(type) {
-	case nil:
-		rightNode = nodes.NullNode{}
-	case string:
-		rightNode = nodes.StringNode{Value: typedOperand}
-	default:
-		rightNode = nodes.ValueNode{Value: rightOperand}
+	return Statement{
+		root: op.Node(leftOperand, castToNode(rightOperand)),
 	}
-	s.root = op.Node(leftOperand, rightNode)
-	return s
+}
+
+func castToNode(operand any) nodes.Node {
+	if operand == nil {
+		return nodes.NullNode{}
+	}
+	switch reflect.TypeOf(operand).Kind() {
+	case reflect.String:
+		return nodes.StringNode{Value: operand.(string)}
+	case reflect.Slice:
+		s := reflect.ValueOf(operand)
+		cast := make([]nodes.Node, 0, s.Len())
+		for i := 0; i < s.Len(); i++ {
+			var castNode nodes.Node
+			kind := s.Index(i).Kind()
+			if kind == reflect.String {
+				castNode = nodes.StringNode{Value: s.Index(i).String()}
+			} else {
+				castNode = nodes.ValueNode{Value: s.Index(i).Interface()}
+			}
+			cast = append(cast, castNode)
+		}
+		return nodes.ArrayNode{Value: cast}
+	default:
+		return nodes.ValueNode{Value: operand}
+	}
 }
 
 func (s Statement) And(another Statement) Statement {
@@ -67,7 +85,6 @@ func (s Statement) ToSQL(placeholder Placeholder) (string, []interface{}) {
 const (
 	openParentheses  = '('
 	closeParentheses = ')'
-	space            = ' '
 )
 
 func (s Statement) toSQL(node nodes.Node, placeholder Placeholder) string {
@@ -75,7 +92,8 @@ func (s Statement) toSQL(node nodes.Node, placeholder Placeholder) string {
 		return ""
 	}
 
-	parentheses := false
+	statementParentheses := false
+	rightChildsParentheses := false
 	switch node.(type) {
 	case nodes.NameNode, nodes.NullNode:
 		return nodes.NodeToSQL(node)
@@ -85,7 +103,10 @@ func (s Statement) toSQL(node nodes.Node, placeholder Placeholder) string {
 		}
 		return nodes.NodeToSQL(node)
 	case nodes.AndNode, nodes.OrNode:
-		parentheses = true
+		statementParentheses = true
+	case nodes.InNode:
+		rightChildsParentheses = true
+	case nodes.ArrayNode:
 	}
 
 	childs := node.Childs()
@@ -95,17 +116,21 @@ func (s Statement) toSQL(node nodes.Node, placeholder Placeholder) string {
 	}
 
 	queryBuilder := strings.Builder{}
-	if parentheses {
+	if statementParentheses {
 		queryBuilder.WriteRune(openParentheses)
 	}
 	queryBuilder.WriteString(s.toSQL(childs[0], placeholder))
 	for _, child := range childs[1:] {
-		queryBuilder.WriteRune(space)
 		queryBuilder.WriteString(nodes.NodeToSQL(node))
-		queryBuilder.WriteRune(space)
+		if rightChildsParentheses {
+			queryBuilder.WriteRune(openParentheses)
+		}
 		queryBuilder.WriteString(s.toSQL(child, placeholder))
+		if rightChildsParentheses {
+			queryBuilder.WriteRune(closeParentheses)
+		}
 	}
-	if parentheses {
+	if statementParentheses {
 		queryBuilder.WriteRune(closeParentheses)
 	}
 

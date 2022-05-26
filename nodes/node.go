@@ -18,22 +18,26 @@ func NodeToSQL(node Node) string {
 		return typedNode.Name
 	case NullNode:
 		return "NULL"
+	case ArrayNode:
+		return ","
 	case EqNode:
 		_, isNull := typedNode.Right.(NullNode)
 		if isNull {
-			return "IS"
+			return " IS "
 		}
-		return "="
+		return " = "
+	case InNode:
+		return " IN "
 	case NeNode:
 		_, isNull := typedNode.Right.(NullNode)
 		if isNull {
-			return "IS NOT"
+			return " IS NOT "
 		}
-		return "<>"
+		return " <> "
 	case AndNode:
-		return "AND"
+		return " AND "
 	case OrNode:
-		return "OR"
+		return " OR "
 	}
 
 	return ""
