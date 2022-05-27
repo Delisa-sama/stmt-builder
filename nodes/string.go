@@ -1,9 +1,17 @@
 package nodes
 
 type StringNode struct {
-	Value string
+	value string
 }
 
-func (n StringNode) Childs() []Node {
-	return nil
+func NewStringNode(value string) StringNode {
+	return StringNode{value: value}
+}
+
+func (n StringNode) Accept(visitor TranslateVisitor) string {
+	return visitor.TranslateStringNode(n)
+}
+
+func (n StringNode) String() string {
+	return n.value
 }

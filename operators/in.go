@@ -7,8 +7,5 @@ import (
 type InOperator struct{}
 
 func (o InOperator) Node(leftOp string, rightOp nodes.Node) nodes.Node {
-	return nodes.InNode{
-		Left:  nodes.NameNode{Name: leftOp},
-		Right: rightOp,
-	}
+	return nodes.NewInNode(nodes.NewNameNode(leftOp), rightOp)
 }

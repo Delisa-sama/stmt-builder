@@ -2,6 +2,10 @@ package nodes
 
 type NullNode struct{}
 
-func (n NullNode) Childs() []Node {
-	return nil
+func NewNullNode() NullNode {
+	return NullNode{}
+}
+
+func (n NullNode) Accept(visitor TranslateVisitor) string {
+	return visitor.TranslateNullNode(n)
 }

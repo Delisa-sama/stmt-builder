@@ -1,10 +1,21 @@
 package nodes
 
 type OrNode struct {
-	Left  Node
-	Right Node
+	left  Node
+	right Node
+}
+
+func NewOrNode(left Node, right Node) OrNode {
+	return OrNode{
+		left:  left,
+		right: right,
+	}
 }
 
 func (n OrNode) Childs() []Node {
-	return []Node{n.Left, n.Right}
+	return []Node{n.left, n.right}
+}
+
+func (n OrNode) Accept(visitor TranslateVisitor) string {
+	return visitor.TranslateOrNode(n)
 }

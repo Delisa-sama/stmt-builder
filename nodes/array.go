@@ -1,9 +1,19 @@
 package nodes
 
 type ArrayNode struct {
-	Value []Node
+	value []Node
+}
+
+func NewArrayNode(value []Node) ArrayNode {
+	return ArrayNode{
+		value: value,
+	}
 }
 
 func (n ArrayNode) Childs() []Node {
-	return n.Value
+	return n.value
+}
+
+func (n ArrayNode) Accept(visitor TranslateVisitor) string {
+	return visitor.TranslateArrayNode(n)
 }

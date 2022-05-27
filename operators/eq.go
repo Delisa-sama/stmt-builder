@@ -7,8 +7,5 @@ import (
 type EQOperator struct{}
 
 func (o EQOperator) Node(leftOp string, rightOp nodes.Node) nodes.Node {
-	return nodes.EqNode{
-		Left:  nodes.NameNode{Name: leftOp},
-		Right: rightOp,
-	}
+	return nodes.NewEqNode(nodes.NewNameNode(leftOp), rightOp)
 }

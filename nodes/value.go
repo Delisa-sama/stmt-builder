@@ -1,9 +1,17 @@
 package nodes
 
 type ValueNode struct {
-	Value any
+	value any
 }
 
-func (n ValueNode) Childs() []Node {
-	return nil
+func NewValueNode(value any) ValueNode {
+	return ValueNode{value: value}
+}
+
+func (n ValueNode) Accept(visitor TranslateVisitor) string {
+	return visitor.TranslateValueNode(n)
+}
+
+func (n ValueNode) Value() any {
+	return n.value
 }
