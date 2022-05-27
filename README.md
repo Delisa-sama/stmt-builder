@@ -1,5 +1,5 @@
 
 ## TODO
-- [ ] strongly typed nodes
+- [x] strongly typed nodes
 - [ ] brackets normalization
 - [ ] non-recursive AST traverse
