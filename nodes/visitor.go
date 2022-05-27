@@ -17,4 +17,7 @@ type TranslateVisitor interface {
 	TranslateStringNode(node StringNode) string
 	TranslateValueNode(node ValueNode) string
 	TranslateTimeNode(n TimeNode) string
+	TranslateIntNode(n IntNode) string
+	TranslateFloatNode(n FloatNode) string
+	TranslateUintNode(n UintNode) string
 }

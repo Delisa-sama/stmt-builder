@@ -37,6 +37,30 @@ func castToNode(operand any) nodes.Node {
 		return nodes.NullNode{}
 	}
 	switch reflect.TypeOf(operand).Kind() {
+	case reflect.Int:
+		return nodes.NewIntNode(int64(operand.(int)))
+	case reflect.Int8:
+		return nodes.NewIntNode(int64(operand.(int8)))
+	case reflect.Int16:
+		return nodes.NewIntNode(int64(operand.(int16)))
+	case reflect.Int32:
+		return nodes.NewIntNode(int64(operand.(int32)))
+	case reflect.Int64:
+		return nodes.NewIntNode(operand.(int64))
+	case reflect.Uint:
+		return nodes.NewUintNode(uint64(operand.(uint)))
+	case reflect.Uint8:
+		return nodes.NewUintNode(uint64(operand.(uint8)))
+	case reflect.Uint16:
+		return nodes.NewUintNode(uint64(operand.(uint16)))
+	case reflect.Uint32:
+		return nodes.NewUintNode(uint64(operand.(uint32)))
+	case reflect.Uint64:
+		return nodes.NewUintNode(operand.(uint64))
+	case reflect.Float64:
+		return nodes.NewFloatNode(operand.(float64))
+	case reflect.Float32:
+		return nodes.NewFloatNode(float64(operand.(float32)))
 	case reflect.String:
 		return nodes.NewStringNode(operand.(string))
 	case reflect.Struct:
@@ -50,14 +74,7 @@ func castToNode(operand any) nodes.Node {
 		s := reflect.ValueOf(operand)
 		cast := make([]nodes.Node, 0, s.Len())
 		for i := 0; i < s.Len(); i++ {
-			var castNode nodes.Node
-			kind := s.Index(i).Kind()
-			if kind == reflect.String {
-				castNode = nodes.NewStringNode(s.Index(i).String())
-			} else {
-				castNode = nodes.NewValueNode(s.Index(i).Interface())
-			}
-			cast = append(cast, castNode)
+			cast = append(cast, castToNode(s.Index(i).Interface()))
 		}
 		return nodes.NewArrayNode(cast)
 	default:

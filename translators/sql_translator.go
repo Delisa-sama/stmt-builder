@@ -2,6 +2,7 @@ package translators
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -54,13 +55,9 @@ func (t *SQLTranslator) getArgs(node nodes.Node) []nodes.Node {
 	if node == nil {
 		return nil
 	}
-	switch node.(type) {
-	case nodes.ValueNode, nodes.StringNode:
-		return []nodes.Node{node}
-	}
 	nodeWithChilds, ok := node.(nodes.NodeWithChilds)
 	if !ok {
-		return nil
+		return []nodes.Node{node}
 	}
 	childs := nodeWithChilds.Childs()
 	// non leaf nodes without childs are useless, ignore it
@@ -207,7 +204,7 @@ func (t *SQLTranslator) TranslateStringNode(node nodes.StringNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
-	return fmt.Sprintf("'%s'", node.String())
+	return fmt.Sprintf("'%s'", node)
 }
 
 func (t *SQLTranslator) TranslateValueNode(node nodes.ValueNode) string {
@@ -221,5 +218,17 @@ func (t *SQLTranslator) TranslateTimeNode(node nodes.TimeNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
-	return fmt.Sprintf("'%s'", node.Time().Format(time.RFC3339))
+	return fmt.Sprintf("'%s'", node.Format(time.RFC3339))
+}
+
+func (t *SQLTranslator) TranslateIntNode(n nodes.IntNode) string {
+	return strconv.Itoa(int(n))
+}
+
+func (t *SQLTranslator) TranslateFloatNode(n nodes.FloatNode) string {
+	return strconv.FormatFloat(float64(n), 'f', -1, 64)
+}
+
+func (t *SQLTranslator) TranslateUintNode(n nodes.UintNode) string {
+	return strconv.FormatUint(uint64(n), 10)
 }

@@ -44,6 +44,7 @@ func exampleStmt() {
 		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
 	fmt.Println(translator.Translate(s))
+	fmt.Println(translator.GetArgs(s))
 }
 
 func main() {
