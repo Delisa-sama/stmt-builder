@@ -7,25 +7,30 @@ import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
 )
 
+// Statement represents tree of nodes that can be translated to query
 type Statement struct {
 	root nodes.Node
 	args []nodes.Node
 }
 
+// Operator represents operator for construct statement
 type Operator interface {
 	Node(leftOp string, rightOp nodes.Node) nodes.Node
 }
 
+// NewStatement returns new statement
 func NewStatement(leftOperand string, op Operator, rightOperand any) Statement {
 	return Statement{
 		root: op.Node(leftOperand, castToNode(rightOperand)),
 	}
 }
 
+// Root returns root node
 func (s Statement) Root() nodes.Node {
 	return s.root
 }
 
+// Not returns new statement with negotiate
 func Not(statement Statement) Statement {
 	return Statement{
 		root: nodes.NewNotNode(statement.root),
@@ -82,12 +87,14 @@ func castToNode(operand any) nodes.Node {
 	}
 }
 
+// And returns a new statement concatenating the two with AND operator
 func (s Statement) And(another Statement) Statement {
 	return Statement{
 		root: nodes.NewAndNode(s.root, another.root),
 	}
 }
 
+// Or returns a new statement concatenating the two with OR operator
 func (s Statement) Or(another Statement) Statement {
 	return Statement{
 		root: nodes.NewOrNode(s.root, another.root),

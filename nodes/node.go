@@ -1,19 +1,23 @@
 package nodes
 
+// Node abstract node that can accept translate visitor
 type Node interface {
 	Accept(visitor TranslateVisitor) string
 }
 
+// NodeWithChilds abstract node with childs
 type NodeWithChilds interface {
 	Node
 	Childs() []Node
 }
 
+// NodeWithName abstract node with name
 type NodeWithName interface {
 	Node
 	Name() NameNode
 }
 
+// TranslateVisitor abstract visitor that translates nodes to some string
 type TranslateVisitor interface {
 	TranslateAndNode(node AndNode) string
 	TranslateArrayNode(node ArrayNode) string
