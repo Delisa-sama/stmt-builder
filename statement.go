@@ -34,7 +34,7 @@ func Not(statement Statement) Statement {
 
 func castToNode(operand any) nodes.Node {
 	if operand == nil {
-		return nodes.NullNode{}
+		return nodes.NewNullNode()
 	}
 	switch reflect.TypeOf(operand).Kind() {
 	case reflect.Int:
