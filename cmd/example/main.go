@@ -45,6 +45,16 @@ func exampleStmt() {
 	)
 	fmt.Println(translator.Translate(s))
 	fmt.Println(translator.GetArgs(s))
+
+	//
+	s = query.NewEmptyStatement()
+	translator = translators.NewSQLTranslator()
+	fmt.Println(translator.Translate(s))
+
+	s = query.NewEmptyStatement().And(query.NewStatement("id", operators.EQOperator{}, 10))
+	translator = translators.NewSQLTranslator()
+	// id = 10
+	fmt.Println(translator.Translate(s))
 }
 
 func main() {
