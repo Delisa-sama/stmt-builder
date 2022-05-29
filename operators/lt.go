@@ -4,10 +4,10 @@ import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
 )
 
-// LTOperator represents larger than operator
-type LTOperator struct{}
+// LT represents larger than operator
+type LT struct{}
 
 // Node returns LtNode
-func (o LTOperator) Node(leftOp string, rightOp nodes.Node) nodes.Node {
+func (o LT) Node(leftOp string, rightOp nodes.Node) nodes.Node {
 	return nodes.NewLtNode(nodes.NewNameNode(leftOp), rightOp)
 }

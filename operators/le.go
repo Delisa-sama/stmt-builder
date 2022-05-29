@@ -4,10 +4,10 @@ import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
 )
 
-// LEOperator represents larger or equals operator
-type LEOperator struct{}
+// LE represents larger or equals operator
+type LE struct{}
 
 // Node returns LeNode
-func (o LEOperator) Node(leftOp string, rightOp nodes.Node) nodes.Node {
+func (o LE) Node(leftOp string, rightOp nodes.Node) nodes.Node {
 	return nodes.NewLeNode(nodes.NewNameNode(leftOp), rightOp)
 }

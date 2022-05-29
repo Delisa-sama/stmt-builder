@@ -4,10 +4,10 @@ import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
 )
 
-// EQOperator represents equals operator
-type EQOperator struct{}
+// EQ represents equals operator
+type EQ struct{}
 
 // Node returns EqNode
-func (o EQOperator) Node(leftOp string, rightOp nodes.Node) nodes.Node {
+func (o EQ) Node(leftOp string, rightOp nodes.Node) nodes.Node {
 	return nodes.NewEqNode(nodes.NewNameNode(leftOp), rightOp)
 }

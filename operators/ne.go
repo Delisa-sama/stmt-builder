@@ -4,10 +4,10 @@ import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
 )
 
-// NeOperator represents not equals operator
-type NeOperator struct{}
+// NE represents not equals operator
+type NE struct{}
 
 // Node returns NeNode
-func (o NeOperator) Node(leftOp string, rightOp nodes.Node) nodes.Node {
+func (o NE) Node(leftOp string, rightOp nodes.Node) nodes.Node {
 	return nodes.NewNeNode(nodes.NewNameNode(leftOp), rightOp)
 }

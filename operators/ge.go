@@ -4,10 +4,10 @@ import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
 )
 
-// GEOperator represents greater or equals operator
-type GEOperator struct{}
+// GE represents greater or equals operator
+type GE struct{}
 
 // Node returns GENode
-func (o GEOperator) Node(leftOp string, rightOp nodes.Node) nodes.Node {
+func (o GE) Node(leftOp string, rightOp nodes.Node) nodes.Node {
 	return nodes.NewGENode(nodes.NewNameNode(leftOp), rightOp)
 }
