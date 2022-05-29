@@ -2,6 +2,7 @@ package statement
 
 import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
+	"github.com/Delisa-sama/stmt-builder/values"
 )
 
 // Statement represents tree of nodes that can be translated to query
@@ -21,6 +22,9 @@ type Value interface {
 
 // New returns new statement
 func New(leftOperand string, op Operator, rightOperand Value) Statement {
+	if rightOperand == nil {
+		rightOperand = values.Null()
+	}
 	return Statement{
 		root: op.Node(leftOperand, rightOperand.Node()),
 	}
