@@ -2,11 +2,11 @@ package nodes
 
 // ValueNode represents node with any type value
 type ValueNode struct {
-	value any
+	value interface{}
 }
 
 // NewValueNode returns new ValueNode
-func NewValueNode(value any) ValueNode {
+func NewValueNode(value interface{}) ValueNode {
 	return ValueNode{value: value}
 }
 
@@ -16,6 +16,6 @@ func (n ValueNode) Accept(visitor TranslateVisitor) string {
 }
 
 // Value returns value of node
-func (n ValueNode) Value() any {
+func (n ValueNode) Value() interface{} {
 	return n.value
 }

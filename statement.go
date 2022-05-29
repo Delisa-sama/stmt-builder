@@ -18,7 +18,7 @@ type Operator interface {
 }
 
 // NewStatement returns new statement
-func NewStatement(leftOperand string, op Operator, rightOperand any) Statement {
+func NewStatement(leftOperand string, op Operator, rightOperand interface{}) Statement {
 	return Statement{
 		root: op.Node(leftOperand, castToNode(rightOperand)),
 	}
@@ -68,7 +68,7 @@ func (s Statement) Or(another Statement) Statement {
 	}
 }
 
-func castToNode(operand any) nodes.Node {
+func castToNode(operand interface{}) nodes.Node {
 	if operand == nil {
 		return nodes.NewNullNode()
 	}
