@@ -2,7 +2,6 @@ package statement
 
 import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
-	"github.com/Delisa-sama/stmt-builder/values"
 )
 
 // Statement represents tree of nodes that can be translated to query
@@ -12,21 +11,13 @@ type Statement struct {
 
 // Operator represents operator for construct statement
 type Operator interface {
-	Node(leftOp string, rightOp nodes.Node) nodes.Node
-}
-
-// Value represents abstract value that can returns equivalent Node
-type Value interface {
-	Node() nodes.Node
+	Node(leftOp string) nodes.Node
 }
 
 // New returns new statement
-func New(leftOperand string, op Operator, rightOperand Value) Statement {
-	if rightOperand == nil {
-		rightOperand = values.Null()
-	}
+func New(leftOperand string, op Operator) Statement {
 	return Statement{
-		root: op.Node(leftOperand, rightOperand.Node()),
+		root: op.Node(leftOperand),
 	}
 }
 

@@ -3,11 +3,11 @@ package nodes
 // InNode represents set operator
 type InNode struct {
 	name  NameNode
-	right Node
+	right ArrayNode
 }
 
 // NewInNode returns InNode
-func NewInNode(name NameNode, right Node) InNode {
+func NewInNode(name NameNode, right ArrayNode) InNode {
 	return InNode{
 		name:  name,
 		right: right,

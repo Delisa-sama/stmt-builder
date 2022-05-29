@@ -2,12 +2,19 @@ package operators
 
 import (
 	"github.com/Delisa-sama/stmt-builder/nodes"
+	"github.com/Delisa-sama/stmt-builder/statement"
 )
 
+type ge struct {
+	value SingleValue
+}
+
 // GE represents greater or equals operator
-type GE struct{}
+func GE(value SingleValue) statement.Operator {
+	return ge{value: value}
+}
 
 // Node returns GENode
-func (o GE) Node(leftOp string, rightOp nodes.Node) nodes.Node {
-	return nodes.NewGENode(nodes.NewNameNode(leftOp), rightOp)
+func (o ge) Node(leftOp string) nodes.Node {
+	return nodes.NewGENode(nodes.NewNameNode(leftOp), o.value.Node())
 }
