@@ -246,15 +246,24 @@ func (t *SQLTranslator) TranslateTimeNode(node nodes.TimeNode) string {
 
 // TranslateIntNode translates int node to sql
 func (t *SQLTranslator) TranslateIntNode(n nodes.IntNode) string {
+	if t.placeholder != nil {
+		return t.placeholder.Next()
+	}
 	return strconv.Itoa(int(n))
 }
 
 // TranslateFloatNode translates float node to sql
 func (t *SQLTranslator) TranslateFloatNode(n nodes.FloatNode) string {
+	if t.placeholder != nil {
+		return t.placeholder.Next()
+	}
 	return strconv.FormatFloat(float64(n), 'f', -1, 64)
 }
 
 // TranslateUintNode translates uint node to SQL
 func (t *SQLTranslator) TranslateUintNode(n nodes.UintNode) string {
+	if t.placeholder != nil {
+		return t.placeholder.Next()
+	}
 	return strconv.FormatUint(uint64(n), 10)
 }
