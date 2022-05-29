@@ -17,50 +17,58 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Delisa-sama/stmt-builder"
 	"github.com/Delisa-sama/stmt-builder/operators"
 	"github.com/Delisa-sama/stmt-builder/placeholders"
+	"github.com/Delisa-sama/stmt-builder/statement"
 	"github.com/Delisa-sama/stmt-builder/translators"
+	"github.com/Delisa-sama/stmt-builder/values"
 )
 
 func exampleStmt() {
-	s := query.NewStatement("id", operators.EQOperator{}, 10).
-		And(query.NewStatement("status", operators.EQOperator{}, "active")).
-		Or(query.NewStatement("deleted_at", operators.NeOperator{}, nil))
+	// ((id = 10 AND status = 'active') OR deleted_at IS NOT NULL)
+	s := statement.New("id", operators.EQ{}, values.Int(10)).
+		And(statement.New("status", operators.EQ{}, values.String("active"))).
+		Or(statement.New("deleted_at", operators.NE{}, values.Null()))
 
 	translator := translators.NewSQLTranslator(
 		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
-	// ((id = 10 AND status = $1) OR deleted_at IS NOT NULL)
 	fmt.Println(translator.Translate(s))
 
-	s = query.NewStatement("id", operators.EQOperator{}, 10).
-		And(
-			query.NewStatement("status", operators.EQOperator{}, "active").
-				Or(query.NewStatement("deleted_at", operators.NeOperator{}, nil)),
-		).Or(query.NewStatement("status", operators.InOperator{}, []string{"status1", "status2"}))
-	translator = translators.NewSQLTranslator()
 	// ((id = 10 AND (status = 'active' OR deleted_at IS NOT NULL)) OR status IN ('status1','status2'))
+	s = statement.New("id", operators.EQ{}, values.Int(10)).
+		And(
+			statement.New("status", operators.EQ{}, values.String("active")).
+				Or(statement.New("deleted_at", operators.NE{}, values.Null())),
+		).Or(statement.New("status", operators.In{}, values.String("status1", "status2")))
+	translator = translators.NewSQLTranslator()
 	fmt.Println(translator.Translate(s))
 	translator = translators.NewSQLTranslator(
 		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
-	// ((id = 10 AND (status = $1 OR deleted_at IS NOT NULL)) OR status IN ($2,$3))
 	fmt.Println(translator.Translate(s))
 
-	s = query.NewStatement("id", operators.EQOperator{}, 10).
-		And(query.NewStatement("created_at", operators.GTOperator{}, time.Now())).
-		Or(query.Not(query.NewStatement("status", operators.InOperator{}, []string{"status1", "status2"})))
+	// ((id = 10 AND created_at > '2022-05-27T13:49:32+03:00') OR !(status IN ('status1','status2')))
+	s = statement.New("id", operators.EQ{}, values.Int(10)).
+		And(statement.New("created_at", operators.GT{}, values.Time(time.Now()))).
+		Or(statement.Not(statement.New("status", operators.In{}, values.String("status1", "status2"))))
 	translator = translators.NewSQLTranslator()
-	// ((id = 10 AND created_at > '2022-05-27T16:55:04+03:00') OR !(status IN ('status1','status2')))
 	fmt.Println(translator.Translate(s))
 	translator = translators.NewSQLTranslator(
 		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
-	// ((id = 10 AND created_at > $1) OR !(status IN ($2,$3)))
 	fmt.Println(translator.Translate(s))
-	// [10 2022-05-27 16:55:04.780222 +0300 MSK m=+0.000167668 status1 status2]
 	fmt.Println(translator.GetArgs(s))
+
+	//
+	s = statement.Empty()
+	translator = translators.NewSQLTranslator()
+	fmt.Println(translator.Translate(s))
+
+	s = statement.Empty().And(statement.New("id", operators.EQ{}, values.Int(10)))
+	translator = translators.NewSQLTranslator()
+	// id = 10
+	fmt.Println(translator.Translate(s))
 }
 
 func main() {
