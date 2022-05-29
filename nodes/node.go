@@ -19,23 +19,23 @@ type NodeWithName interface {
 
 // TranslateVisitor abstract visitor that translates nodes to some string
 type TranslateVisitor interface {
-	TranslateAndNode(node AndNode) string
-	TranslateArrayNode(node ArrayNode) string
-	TranslateEqNode(node EqNode) string
-	TranslateGeNode(node GeNode) string
-	TranslateGtNode(node GtNode) string
-	TranslateInNode(node InNode) string
-	TranslateLeNode(node LeNode) string
-	TranslateLtNode(node LtNode) string
-	TranslateNameNode(node NameNode) string
-	TranslateNeNode(node NeNode) string
-	TranslateNotNode(node NotNode) string
-	TranslateNullNode(node NullNode) string
-	TranslateOrNode(node OrNode) string
-	TranslateStringNode(node StringNode) string
-	TranslateValueNode(node ValueNode) string
-	TranslateTimeNode(n TimeNode) string
-	TranslateIntNode(n IntNode) string
-	TranslateFloatNode(n FloatNode) string
-	TranslateUintNode(n UintNode) string
+	TranslateAndNode(AndNode) string
+	TranslateArrayNode(ArrayNode) string
+	TranslateEqNode(EqNode) string
+	TranslateGeNode(GeNode) string
+	TranslateGtNode(GtNode) string
+	TranslateInNode(InNode) string
+	TranslateLeNode(LeNode) string
+	TranslateLtNode(LtNode) string
+	TranslateNameNode(NameNode) string
+	TranslateNeNode(NeNode) string
+	TranslateNotNode(NotNode) string
+	TranslateNullNode(NullNode) string
+	TranslateOrNode(OrNode) string
+	TranslateStringNode(StringNode) string
+	TranslateValueNode(ValueNode) string
+	TranslateTimeNode(TimeNode) string
+	TranslateIntNode(IntNode) string
+	TranslateFloatNode(FloatNode) string
+	TranslateUintNode(UintNode) string
 }

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	query "github.com/Delisa-sama/stmt-builder"
 	"github.com/Delisa-sama/stmt-builder/nodes"
+	"github.com/Delisa-sama/stmt-builder/statement"
 )
 
 // Placeholder represents abstract placeholder for SQL query
@@ -45,7 +45,7 @@ const (
 )
 
 // GetArgs returns args for SQL query from statement
-func (t *SQLTranslator) GetArgs(s query.Statement) []interface{} {
+func (t *SQLTranslator) GetArgs(s statement.Statement) []interface{} {
 	statementArgs := t.getArgs(s.Root())
 	if len(statementArgs) == 0 {
 		return nil
@@ -79,7 +79,7 @@ func (t *SQLTranslator) getArgs(node nodes.Node) []nodes.Node {
 }
 
 // Translate translates statement to SQL
-func (t *SQLTranslator) Translate(s query.Statement) string {
+func (t *SQLTranslator) Translate(s statement.Statement) string {
 	return t.translate(s.Root())
 }
 
