@@ -61,6 +61,9 @@ func (t *SQLTranslator) getArgs(node nodes.Node) []nodes.Node {
 	if node == nil {
 		return nil
 	}
+	if _, ok := node.(nodes.NullNode); ok {
+		return nil
+	}
 	nodeWithChilds, ok := node.(nodes.NodeWithChilds)
 	if !ok {
 		return []nodes.Node{node}
