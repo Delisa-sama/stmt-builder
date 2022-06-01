@@ -25,6 +25,7 @@ type TranslateVisitor interface {
 	TranslateGeNode(GeNode) string
 	TranslateGtNode(GtNode) string
 	TranslateInNode(InNode) string
+	TranslateNotInNode(NotInNode) string
 	TranslateLeNode(LeNode) string
 	TranslateLtNode(LtNode) string
 	TranslateNameNode(NameNode) string

@@ -96,7 +96,7 @@ func (t *SQLTranslator) translate(node nodes.Node) string {
 	switch node.(type) {
 	case nodes.AndNode, nodes.OrNode:
 		statementParentheses = true
-	case nodes.InNode, nodes.NotNode:
+	case nodes.InNode, nodes.NotNode, nodes.NotInNode:
 		childsParentheses = true
 	}
 
@@ -182,6 +182,11 @@ func (t *SQLTranslator) TranslateGtNode(node nodes.GtNode) string {
 // TranslateInNode translates In node to sql
 func (t *SQLTranslator) TranslateInNode(node nodes.InNode) string {
 	return " IN "
+}
+
+// TranslateNotInNode translates NotIn node to sql
+func (t *SQLTranslator) TranslateNotInNode(_ nodes.NotInNode) string {
+	return " NOT IN "
 }
 
 // TranslateLeNode translates LE node to sql
