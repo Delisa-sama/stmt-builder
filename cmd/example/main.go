@@ -38,7 +38,7 @@ func exampleStmt() {
 	fmt.Println(translator.Translate(s))
 
 	// ((id = 10 AND created_at > '2022-05-27T13:49:32+03:00') OR !(status IN ('status1','status2')))
-	s = statement.New("id", operators.EQ(values.Int(10))).
+	s = statement.New("id", operators.EQ(values.Int64(10))).
 		And(
 			statement.New("created_at", operators.GT(values.Time(time.Now()))).Or(
 				statement.Not(statement.New("status", operators.In(values.Strings("status1", "status2"))))),
