@@ -60,6 +60,18 @@ func exampleStmt() {
 	translator = translators.NewSQLTranslator()
 	// id = 10
 	fmt.Println(translator.Translate(s))
+
+	// NOT IN
+	// type NOT IN ("archive", "block")
+	s = statement.New("type", operators.NotIn(values.Strings("archive", "block")))
+
+	translator = translators.NewSQLTranslator(
+		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
+	)
+	// type NOT IN ($1,$2)
+	fmt.Println(translator.Translate(s))
+	// [archive block]
+	fmt.Println(translator.GetArgs(s))
 }
 
 func main() {
