@@ -257,7 +257,7 @@ func (t *SQLTranslator) TranslateIntNode(n nodes.IntNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
-	return strconv.Itoa(int(n))
+	return strconv.FormatInt(int64(n), 10)
 }
 
 // TranslateFloatNode translates float node to sql

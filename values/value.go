@@ -21,6 +21,7 @@ const (
 	UnknownType Type = iota
 	NullType
 	BoolType
+	IntType
 	Int64Type
 	Uint64Type
 	Float64Type
@@ -56,6 +57,8 @@ func castToNode(typeOf Type, value interface{}) nodes.Node {
 		return nodes.NewNullNode()
 	case BoolType:
 		return nodes.NewValueNode(value)
+	case IntType:
+		return nodes.NewIntNode(int64(value.(int)))
 	case Int64Type:
 		return nodes.NewIntNode(value.(int64))
 	case Float64Type:
@@ -96,15 +99,31 @@ func Bools(v ...bool) Values {
 }
 
 // Int returns new int typed value.
-func Int(v int64) Value {
+func Int(v int) Value {
+	return Value{
+		typeOf: IntType,
+		value:  v,
+	}
+}
+
+// Ints returns new int typed multiple value
+func Ints(v ...int) Values {
+	return Values{
+		typeOf: IntType,
+		value:  v,
+	}
+}
+
+// Int64 returns new int64 typed value.
+func Int64(v int64) Value {
 	return Value{
 		typeOf: Int64Type,
 		value:  v,
 	}
 }
 
-// Ints returns new int typed multiple value
-func Ints(v ...int64) Values {
+// Ints64 returns new int64 typed multiple value
+func Ints64(v ...int64) Values {
 	return Values{
 		typeOf: Int64Type,
 		value:  v,
