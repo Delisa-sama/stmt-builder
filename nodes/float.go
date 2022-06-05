@@ -12,3 +12,8 @@ func NewFloatNode(value float64) FloatNode {
 func (n FloatNode) Accept(visitor TranslateVisitor) string {
 	return visitor.TranslateFloatNode(n)
 }
+
+// Value returns value of the node as primitive type
+func (n FloatNode) Value() interface{} {
+	return float64(n)
+}

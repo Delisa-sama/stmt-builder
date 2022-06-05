@@ -12,3 +12,8 @@ func NewUintNode(value uint64) UintNode {
 func (n UintNode) Accept(visitor TranslateVisitor) string {
 	return visitor.TranslateUintNode(n)
 }
+
+// Value returns value of the node as primitive type
+func (n UintNode) Value() interface{} {
+	return uint64(n)
+}

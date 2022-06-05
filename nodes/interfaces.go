@@ -17,6 +17,12 @@ type NodeWithName interface {
 	Name() NameNode
 }
 
+// NodeWithValue abstract node with value
+type NodeWithValue interface {
+	Node
+	Value() interface{}
+}
+
 // TranslateVisitor abstract visitor that translates nodes to some string
 type TranslateVisitor interface {
 	TranslateAndNode(AndNode) string

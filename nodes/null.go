@@ -12,3 +12,8 @@ func NewNullNode() NullNode {
 func (n NullNode) Accept(visitor TranslateVisitor) string {
 	return visitor.TranslateNullNode(n)
 }
+
+// Value returns value of the node as primitive type
+func (n NullNode) Value() interface{} {
+	return nil
+}
