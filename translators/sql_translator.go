@@ -46,34 +46,29 @@ const (
 
 // GetArgs returns args for SQL query from statement
 func (t *SQLTranslator) GetArgs(s statement.Statement) []interface{} {
-	statementArgs := t.getArgs(s.Root())
-	if len(statementArgs) == 0 {
-		return nil
-	}
-	args := make([]interface{}, 0, len(statementArgs))
-	for _, arg := range statementArgs {
-		args = append(args, arg)
-	}
-	return args
+	return t.getArgs(s.Root())
 }
 
-func (t *SQLTranslator) getArgs(node nodes.Node) []nodes.Node {
+func (t *SQLTranslator) getArgs(node nodes.Node) []interface{} {
 	if node == nil {
-		return nil
+		return []interface{}{}
 	}
 	if _, ok := node.(nodes.NullNode); ok {
-		return nil
+		return []interface{}{}
+	}
+	if nodeWithValue, ok := node.(nodes.NodeWithValue); ok {
+		return []interface{}{nodeWithValue.Value()}
 	}
 	nodeWithChilds, ok := node.(nodes.NodeWithChilds)
 	if !ok {
-		return []nodes.Node{node}
+		return []interface{}{}
 	}
 	childs := nodeWithChilds.Childs()
 	// non leaf nodes without childs are useless, ignore it
 	if len(childs) == 0 {
-		return nil
+		return []interface{}{}
 	}
-	args := make([]nodes.Node, 0)
+	args := make([]interface{}, 0)
 	for _, child := range childs {
 		args = append(args, t.getArgs(child)...)
 	}
@@ -100,10 +95,15 @@ func (t *SQLTranslator) translate(node nodes.Node) string {
 		childsParentheses = true
 	}
 
+	if nodeWithValue, ok := node.(nodes.NodeWithValue); ok {
+		return nodeWithValue.Accept(t)
+	}
+
 	nodeWithChilds, ok := node.(nodes.NodeWithChilds)
 	if !ok {
 		return node.Accept(t)
 	}
+
 	childs := nodeWithChilds.Childs()
 	// non leaf nodes without childs are useless, ignore it
 	if len(childs) == 0 {

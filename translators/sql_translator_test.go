@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Delisa-sama/stmt-builder/nodes"
 	"github.com/Delisa-sama/stmt-builder/operators"
 	"github.com/Delisa-sama/stmt-builder/placeholders"
 	"github.com/Delisa-sama/stmt-builder/statement"
@@ -85,12 +84,12 @@ func TestSQLTranslator_GetArgs(t *testing.T) {
 		{
 			name: "single statement expression",
 			s:    statement.New("id", operators.EQ(values.Int(10))),
-			want: []interface{}{nodes.IntNode(10)},
+			want: []interface{}{int64(10)},
 		},
 		{
 			name: "empty statement",
 			s:    statement.Empty(),
-			want: nil,
+			want: []interface{}{},
 		},
 		{
 			name: "more complex expression",
@@ -103,10 +102,10 @@ func TestSQLTranslator_GetArgs(t *testing.T) {
 					Or(statement.New("weight", operators.GE(values.Float(12.0)))),
 			),
 			want: []interface{}{
-				nodes.IntNode(10),
-				nodes.StringNode("active"),
-				nodes.FloatNode(25.123),
-				nodes.FloatNode(12.0),
+				int64(10),
+				"active",
+				25.123,
+				12.0,
 			},
 		},
 	}

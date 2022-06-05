@@ -12,3 +12,8 @@ func NewStringNode(value string) StringNode {
 func (n StringNode) Accept(visitor TranslateVisitor) string {
 	return visitor.TranslateStringNode(n)
 }
+
+// Value returns value of the node as primitive type
+func (n StringNode) Value() interface{} {
+	return string(n)
+}

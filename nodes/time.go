@@ -18,3 +18,8 @@ func NewTimeNode(value time.Time) TimeNode {
 func (n TimeNode) Accept(visitor TranslateVisitor) string {
 	return visitor.TranslateTimeNode(n)
 }
+
+// Value returns value of the node as primitive type
+func (n TimeNode) Value() interface{} {
+	return n.Time
+}

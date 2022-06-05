@@ -12,3 +12,8 @@ func NewIntNode(value int64) IntNode {
 func (n IntNode) Accept(visitor TranslateVisitor) string {
 	return visitor.TranslateIntNode(n)
 }
+
+// Value returns value of the node as primitive type
+func (n IntNode) Value() interface{} {
+	return int64(n)
+}
