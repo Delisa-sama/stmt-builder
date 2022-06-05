@@ -56,7 +56,7 @@ func castToNode(typeOf Type, value interface{}) nodes.Node {
 	case NullType:
 		return nodes.NewNullNode()
 	case BoolType:
-		return nodes.NewValueNode(value)
+		return nodes.NewBoolNode(value.(bool))
 	case IntType:
 		return nodes.NewIntNode(int64(value.(int)))
 	case Int64Type:

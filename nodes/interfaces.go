@@ -45,4 +45,5 @@ type TranslateVisitor interface {
 	TranslateIntNode(IntNode) string
 	TranslateFloatNode(FloatNode) string
 	TranslateUintNode(UintNode) string
+	TranslateBoolNode(BoolNode) string
 }

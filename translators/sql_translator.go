@@ -53,27 +53,24 @@ func (t *SQLTranslator) getArgs(node nodes.Node) []interface{} {
 	if node == nil {
 		return []interface{}{}
 	}
-	if _, ok := node.(nodes.NullNode); ok {
+	switch node := node.(type) {
+	case nodes.NullNode, nodes.BoolNode:
 		return []interface{}{}
+	case nodes.NodeWithValue:
+		return []interface{}{node.Value()}
+	case nodes.NodeWithChilds:
+		childs := node.Childs()
+		// non leaf nodes without childs are useless, ignore it
+		if len(childs) == 0 {
+			return []interface{}{}
+		}
+		args := make([]interface{}, 0)
+		for _, child := range childs {
+			args = append(args, t.getArgs(child)...)
+		}
+		return args
 	}
-	if nodeWithValue, ok := node.(nodes.NodeWithValue); ok {
-		return []interface{}{nodeWithValue.Value()}
-	}
-	nodeWithChilds, ok := node.(nodes.NodeWithChilds)
-	if !ok {
-		return []interface{}{}
-	}
-	childs := nodeWithChilds.Childs()
-	// non leaf nodes without childs are useless, ignore it
-	if len(childs) == 0 {
-		return []interface{}{}
-	}
-	args := make([]interface{}, 0)
-	for _, child := range childs {
-		args = append(args, t.getArgs(child)...)
-	}
-
-	return args
+	return nil
 }
 
 // Translate translates statement to SQL
@@ -274,4 +271,12 @@ func (t *SQLTranslator) TranslateUintNode(n nodes.UintNode) string {
 		return t.placeholder.Next()
 	}
 	return strconv.FormatUint(uint64(n), 10)
+}
+
+// TranslateBoolNode translates bool node to SQL
+func (t *SQLTranslator) TranslateBoolNode(n nodes.BoolNode) string {
+	if n {
+		return "TRUE"
+	}
+	return "FALSE"
 }

@@ -13,7 +13,7 @@ import (
 
 func exampleStmt() {
 	// ((id = 10 AND status = 'active') OR deleted_at IS NOT NULL)
-	s := statement.New("id", operators.EQ(values.Int(10))).
+	s := statement.New("id", operators.EQ(values.Bool(true))).
 		And(statement.New("status", operators.EQ(values.String("active")))).
 		Or(statement.New("deleted_at", operators.NE(values.Null())))
 
@@ -21,6 +21,7 @@ func exampleStmt() {
 		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
 	fmt.Println(translator.Translate(s))
+	fmt.Println(translator.GetArgs(s))
 
 	// ((id = 10 AND (status = 'active' OR deleted_at IS NOT NULL)) OR status IN ('status1','status2'))
 	s = statement.New("id", operators.EQ(values.Int(10))).
