@@ -117,7 +117,11 @@ func (t *SQLTranslator) translate(node nodes.Node) string {
 	}
 	// unary op
 	if len(childs) == 1 {
-		queryBuilder.WriteString(node.Accept(t))
+		// TODO: think about exclusive array node translation
+		_, isArrayNode := node.(nodes.ArrayNode)
+		if !isArrayNode {
+			queryBuilder.WriteString(node.Accept(t))
+		}
 		if childsParentheses {
 			queryBuilder.WriteRune(openParentheses)
 		}
