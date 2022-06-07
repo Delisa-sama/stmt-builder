@@ -29,7 +29,7 @@ func exampleStmt() {
 			statement.New("status", operators.EQ(values.String("active"))).
 				Or(statement.New("deleted_at", operators.NE(values.Null()))),
 		).Or(
-		statement.New("status", operators.In(values.Strings("status1", "status2"))),
+		statement.New("status", operators.In(values.Strings("status1"))),
 	)
 	translator = translators.NewSQLTranslator()
 	fmt.Println(translator.Translate(s))
