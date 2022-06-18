@@ -6,6 +6,7 @@ import (
 
 	"github.com/Delisa-sama/stmt-builder/operators"
 	"github.com/Delisa-sama/stmt-builder/placeholders"
+	"github.com/Delisa-sama/stmt-builder/sort"
 	"github.com/Delisa-sama/stmt-builder/statement"
 	"github.com/Delisa-sama/stmt-builder/translators"
 	"github.com/Delisa-sama/stmt-builder/values"
@@ -64,7 +65,8 @@ func exampleStmt() {
 
 	// NOT IN
 	// type NOT IN ("archive", "block")
-	s = statement.New("type", operators.NotIn(values.Strings("archive", "block")))
+	s = statement.New("type", operators.NotIn(values.Strings("archive", "block"))).
+		Sort(sort.By("id"), sort.DESCDirection)
 
 	translator = translators.NewSQLTranslator(
 		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),

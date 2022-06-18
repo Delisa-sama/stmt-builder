@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Delisa-sama/stmt-builder/nodes"
+	"github.com/Delisa-sama/stmt-builder/sort"
 	"github.com/Delisa-sama/stmt-builder/statement"
 )
 
@@ -18,6 +19,12 @@ type Placeholder interface {
 // SQLTranslator represents translator from statement to SQL
 type SQLTranslator struct {
 	placeholder Placeholder
+}
+
+// Statement represents abstract statement
+type Statement interface {
+	GetRoot() nodes.Node
+	GetSort() sort.Sort
 }
 
 // SQLTranslatorOption represents option for SQLTranslator
@@ -46,7 +53,7 @@ const (
 
 // GetArgs returns args for SQL query from statement
 func (t *SQLTranslator) GetArgs(s statement.Statement) []interface{} {
-	return t.getArgs(s.Root())
+	return t.getArgs(s.GetRoot())
 }
 
 func (t *SQLTranslator) getArgs(node nodes.Node) []interface{} {
@@ -74,11 +81,16 @@ func (t *SQLTranslator) getArgs(node nodes.Node) []interface{} {
 }
 
 // Translate translates statement to SQL
-func (t *SQLTranslator) Translate(s statement.Statement) string {
-	return t.translate(s.Root())
+func (t *SQLTranslator) Translate(s Statement) string {
+	queryBuilder := strings.Builder{}
+
+	queryBuilder.WriteString(t.translateNode(s.GetRoot()))
+	queryBuilder.WriteString(t.translateSort(s.GetSort()))
+
+	return queryBuilder.String()
 }
 
-func (t *SQLTranslator) translate(node nodes.Node) string {
+func (t *SQLTranslator) translateNode(node nodes.Node) string {
 	if node == nil {
 		return ""
 	}
@@ -125,23 +137,23 @@ func (t *SQLTranslator) translate(node nodes.Node) string {
 		if childsParentheses {
 			queryBuilder.WriteRune(openParentheses)
 		}
-		queryBuilder.WriteString(t.translate(childs[0]))
+		queryBuilder.WriteString(t.translateNode(childs[0]))
 		if childsParentheses {
 			queryBuilder.WriteRune(closeParentheses)
 		}
 	}
 	// binary op
 	if len(childs) == 2 {
-		queryBuilder.WriteString(t.translate(childs[0]))
+		queryBuilder.WriteString(t.translateNode(childs[0]))
 		queryBuilder.WriteString(node.Accept(t))
-		queryBuilder.WriteString(t.translate(childs[1]))
+		queryBuilder.WriteString(t.translateNode(childs[1]))
 	}
 	// variadic op
 	if len(childs) > 2 {
-		queryBuilder.WriteString(t.translate(childs[0]))
+		queryBuilder.WriteString(t.translateNode(childs[0]))
 		for _, child := range childs[1:] {
 			queryBuilder.WriteString(node.Accept(t))
-			queryBuilder.WriteString(t.translate(child))
+			queryBuilder.WriteString(t.translateNode(child))
 		}
 	}
 	if statementParentheses {
@@ -149,6 +161,23 @@ func (t *SQLTranslator) translate(node nodes.Node) string {
 	}
 
 	return queryBuilder.String()
+}
+
+func (t *SQLTranslator) translateSort(s sort.Sort) string {
+	if s == nil {
+		return ""
+	}
+	sortBuilder := strings.Builder{}
+
+	sortBuilder.WriteString(" ORDER BY ")
+	sortBuilder.WriteString(strings.Join(s.By(), ","))
+	if s.Direction() == sort.ASCDirection {
+		sortBuilder.WriteString(" ASC")
+	} else {
+		sortBuilder.WriteString(" DESC")
+	}
+
+	return sortBuilder.String()
 }
 
 // TranslateAndNode translates and node to sql

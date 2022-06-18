@@ -7,6 +7,7 @@ import (
 
 	"github.com/Delisa-sama/stmt-builder/operators"
 	"github.com/Delisa-sama/stmt-builder/placeholders"
+	"github.com/Delisa-sama/stmt-builder/sort"
 	"github.com/Delisa-sama/stmt-builder/statement"
 	"github.com/Delisa-sama/stmt-builder/values"
 )
@@ -63,6 +64,20 @@ func TestSQLTranslator_Translate(t *testing.T) {
 					Or(statement.New("weight", operators.GE(values.Float(12.0)))),
 			),
 			want: "(!(((id = 10 AND status <> 'active') OR deleted_at IS NULL)) AND (weight < 25.123 OR weight >= 12))",
+		},
+		{
+			name:        "single statement with sort",
+			placeholder: nil,
+			s:           statement.New("id", operators.NE(values.Int(10))).Sort([]string{"id"}, sort.DESCDirection),
+			want:        "id <> 10 ORDER BY id DESC",
+		},
+		{
+			name:        "complex expression with multiple column sort",
+			placeholder: placeholders.NewQuestionMarkPlaceholder(),
+			s: statement.New("id", operators.EQ(values.Int(10))).
+				And(statement.New("status", operators.In(values.Strings("active", "blocked")))).
+				Sort(sort.By("id", "status"), sort.DESCDirection),
+			want: "(id = ? AND status IN (?,?)) ORDER BY id,status DESC",
 		},
 	}
 	for _, tt := range tests {
