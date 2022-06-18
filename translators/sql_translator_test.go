@@ -23,7 +23,7 @@ func TestSQLTranslator_Translate(t *testing.T) {
 			name:        "single statement expression without brackets",
 			placeholder: nil,
 			s:           statement.New("id", operators.EQ(values.Int(10))),
-			want:        "id = 10",
+			want:        " WHERE id = 10",
 		},
 		{
 			name:        "empty statement",
@@ -36,21 +36,21 @@ func TestSQLTranslator_Translate(t *testing.T) {
 			placeholder: nil,
 			s: statement.New("id", operators.EQ(values.Int(10))).
 				And(statement.New("status", operators.In(values.Strings("active", "blocked")))),
-			want: "(id = 10 AND status IN ('active','blocked'))",
+			want: " WHERE (id = 10 AND status IN ('active','blocked'))",
 		},
 		{
 			name:        "complex expression with dollar placeholder",
 			placeholder: placeholders.NewDollarPlaceholder(),
 			s: statement.New("id", operators.EQ(values.Int(10))).
 				And(statement.New("status", operators.In(values.Strings("active", "blocked")))),
-			want: "(id = $1 AND status IN ($2,$3))",
+			want: " WHERE (id = $1 AND status IN ($2,$3))",
 		},
 		{
 			name:        "complex expression with question mark placeholder",
 			placeholder: placeholders.NewQuestionMarkPlaceholder(),
 			s: statement.New("id", operators.EQ(values.Int(10))).
 				And(statement.New("status", operators.In(values.Strings("active", "blocked")))),
-			want: "(id = ? AND status IN (?,?))",
+			want: " WHERE (id = ? AND status IN (?,?))",
 		},
 		{
 			name:        "more complex expression",
@@ -63,13 +63,13 @@ func TestSQLTranslator_Translate(t *testing.T) {
 				statement.New("weight", operators.LT(values.Float(25.123))).
 					Or(statement.New("weight", operators.GE(values.Float(12.0)))),
 			),
-			want: "(!(((id = 10 AND status <> 'active') OR deleted_at IS NULL)) AND (weight < 25.123 OR weight >= 12))",
+			want: " WHERE (!(((id = 10 AND status <> 'active') OR deleted_at IS NULL)) AND (weight < 25.123 OR weight >= 12))",
 		},
 		{
 			name:        "single statement with sort",
 			placeholder: nil,
 			s:           statement.New("id", operators.NE(values.Int(10))).Sort([]string{"id"}, sort.DESCDirection),
-			want:        "id <> 10 ORDER BY id DESC",
+			want:        " WHERE id <> 10 ORDER BY id DESC",
 		},
 		{
 			name:        "complex expression with multiple column sort",
@@ -77,7 +77,7 @@ func TestSQLTranslator_Translate(t *testing.T) {
 			s: statement.New("id", operators.EQ(values.Int(10))).
 				And(statement.New("status", operators.In(values.Strings("active", "blocked")))).
 				Sort(sort.By("id", "status"), sort.DESCDirection),
-			want: "(id = ? AND status IN (?,?)) ORDER BY id,status DESC",
+			want: " WHERE (id = ? AND status IN (?,?)) ORDER BY id,status DESC",
 		},
 	}
 	for _, tt := range tests {
