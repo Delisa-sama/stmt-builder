@@ -85,11 +85,10 @@ func (t *SQLTranslator) Translate(s Statement) string {
 	queryBuilder := strings.Builder{}
 
 	root := s.GetRoot()
-	if root == nil {
-		return ""
+	if root != nil {
+		queryBuilder.WriteString(" WHERE ")
+		queryBuilder.WriteString(t.translateNode(root))
 	}
-	queryBuilder.WriteString(" WHERE ")
-	queryBuilder.WriteString(t.translateNode(root))
 	queryBuilder.WriteString(t.translateSort(s.GetSort()))
 
 	return queryBuilder.String()
