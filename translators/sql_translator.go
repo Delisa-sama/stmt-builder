@@ -84,7 +84,12 @@ func (t *SQLTranslator) getArgs(node nodes.Node) []interface{} {
 func (t *SQLTranslator) Translate(s Statement) string {
 	queryBuilder := strings.Builder{}
 
-	queryBuilder.WriteString(t.translateNode(s.GetRoot()))
+	root := s.GetRoot()
+	if root == nil {
+		return ""
+	}
+	queryBuilder.WriteString(" WHERE ")
+	queryBuilder.WriteString(t.translateNode(root))
 	queryBuilder.WriteString(t.translateSort(s.GetSort()))
 
 	return queryBuilder.String()
