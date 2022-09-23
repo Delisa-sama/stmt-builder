@@ -79,6 +79,18 @@ func TestSQLTranslator_Translate(t *testing.T) {
 				Sort(sort.By("id", "status"), sort.DESCDirection),
 			want: " WHERE (id = ? AND status IN (?,?)) ORDER BY id,status DESC",
 		},
+		{
+			name:        "single statement LIKE expression",
+			placeholder: nil,
+			s:           statement.New("name", operators.LIKE("%abc%")),
+			want:        " WHERE name LIKE '%abc%'",
+		},
+		{
+			name:        "single statement LIKE expression",
+			placeholder: nil,
+			s:           statement.New("name", operators.ILIKE("%abc%")),
+			want:        " WHERE name LIKE '%abc%'",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -317,3 +317,13 @@ func (t *SQLTranslator) TranslateBoolNode(n nodes.BoolNode) string {
 	}
 	return "FALSE"
 }
+
+// TranslateLikeNode translates Like node to SQL
+func (t *SQLTranslator) TranslateLikeNode(n nodes.LikeNode) string {
+	return " LIKE "
+}
+
+// TranslateILikeNode translates ILike node to SQL
+func (t *SQLTranslator) TranslateILikeNode(n nodes.ILikeNode) string {
+	return " ILIKE "
+}

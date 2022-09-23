@@ -46,4 +46,6 @@ type TranslateVisitor interface {
 	TranslateFloatNode(FloatNode) string
 	TranslateUintNode(UintNode) string
 	TranslateBoolNode(BoolNode) string
+	TranslateLikeNode(LikeNode) string
+	TranslateILikeNode(ILikeNode) string
 }
