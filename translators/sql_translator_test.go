@@ -20,6 +20,13 @@ func TestSQLTranslator_Translate(t *testing.T) {
 		want        string
 	}{
 		{
+			name:        "Operators with multiple childs will not handle child that were translate as an empty string",
+			placeholder: nil,
+			s: statement.New("id", operators.EQ(values.Int(10))).
+				And(statement.New("status", operators.In(values.Strings()))),
+			want: " WHERE (id = 10)",
+		},
+		{
 			name:        "single statement expression without brackets",
 			placeholder: nil,
 			s:           statement.New("id", operators.EQ(values.Int(10))),

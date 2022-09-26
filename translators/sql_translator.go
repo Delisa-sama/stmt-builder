@@ -141,16 +141,28 @@ func (t *SQLTranslator) translateNode(node nodes.Node) string {
 		if childsParentheses {
 			queryBuilder.WriteRune(openParentheses)
 		}
-		queryBuilder.WriteString(t.translateNode(childs[0]))
+		translatedNode := t.translateNode(childs[0])
+		if translatedNode == "" {
+			return ""
+		}
+		queryBuilder.WriteString(translatedNode)
 		if childsParentheses {
 			queryBuilder.WriteRune(closeParentheses)
 		}
 	}
 	// binary op
 	if len(childs) == 2 {
-		queryBuilder.WriteString(t.translateNode(childs[0]))
-		queryBuilder.WriteString(node.Accept(t))
-		queryBuilder.WriteString(t.translateNode(childs[1]))
+		translatedNode := t.translateNode(childs[0])
+		if translatedNode == "" {
+			return ""
+		}
+		queryBuilder.WriteString(translatedNode)
+
+		translatedNode = t.translateNode(childs[1])
+		if translatedNode != "" {
+			queryBuilder.WriteString(node.Accept(t))
+			queryBuilder.WriteString(translatedNode)
+		}
 	}
 	// variadic op
 	if len(childs) > 2 {
