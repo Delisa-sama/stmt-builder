@@ -27,6 +27,12 @@ func TestSQLTranslator_Translate(t *testing.T) {
 			want: " WHERE (id = 10)",
 		},
 		{
+			name:        "single In operator without arguments returns nothing",
+			placeholder: nil,
+			s:           statement.New("status", operators.In(values.Strings())),
+			want:        "",
+		},
+		{
 			name:        "single statement expression without brackets",
 			placeholder: nil,
 			s:           statement.New("id", operators.EQ(values.Int(10))),
