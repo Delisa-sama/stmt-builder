@@ -6,7 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Delisa-sama/stmt-builder/limit"
 	"github.com/Delisa-sama/stmt-builder/nodes"
+	"github.com/Delisa-sama/stmt-builder/offset"
 	"github.com/Delisa-sama/stmt-builder/sort"
 	"github.com/Delisa-sama/stmt-builder/statement"
 )
@@ -25,6 +27,8 @@ type SQLTranslator struct {
 type Statement interface {
 	GetRoot() nodes.Node
 	GetSort() sort.Sort
+	GetLimit() limit.Limit
+	GetOffset() offset.Offset
 }
 
 // SQLTranslatorOption represents option for SQLTranslator
@@ -90,6 +94,10 @@ func (t *SQLTranslator) Translate(s Statement) string {
 		queryBuilder.WriteString(t.translateNode(root))
 	}
 	queryBuilder.WriteString(t.translateSort(s.GetSort()))
+
+	queryBuilder.WriteString(t.translateLimit(s.GetLimit()))
+
+	queryBuilder.WriteString(t.translateOffset(s.GetOffset()))
 
 	return queryBuilder.String()
 }
@@ -182,6 +190,30 @@ func (t *SQLTranslator) translateSort(s sort.Sort) string {
 	}
 
 	return sortBuilder.String()
+}
+
+func (t *SQLTranslator) translateLimit(l limit.Limit) string {
+	if l == nil {
+		return ""
+	}
+	limitBuilder := strings.Builder{}
+
+	limitBuilder.WriteString(" LIMIT ")
+	limitBuilder.WriteString(strconv.FormatUint(uint64(l.Get()), 10))
+
+	return limitBuilder.String()
+}
+
+func (t *SQLTranslator) translateOffset(o offset.Offset) string {
+	if o == nil {
+		return ""
+	}
+	offsetBuilder := strings.Builder{}
+
+	offsetBuilder.WriteString(" OFFSET ")
+	offsetBuilder.WriteString(strconv.FormatUint(uint64(o.Get()), 10))
+
+	return offsetBuilder.String()
 }
 
 // TranslateAndNode translates and node to sql
