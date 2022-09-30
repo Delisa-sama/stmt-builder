@@ -75,6 +75,11 @@ func exampleStmt() {
 	fmt.Println(translator.Translate(s))
 	// [archive block]
 	fmt.Println(translator.GetArgs(s))
+
+	// LIMIT AND OFFSET
+	s = statement.New("name", operators.EQ(values.String("Example"))).Limit(1).Offset(5)
+	// WHERE name = $3 LIMIT 1 OFFSET 5
+	fmt.Println(translator.Translate(s))
 }
 
 func main() {

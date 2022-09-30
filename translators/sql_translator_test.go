@@ -91,6 +91,12 @@ func TestSQLTranslator_Translate(t *testing.T) {
 			s:           statement.New("name", operators.ILIKE("%abc%")),
 			want:        " WHERE name LIKE '%abc%'",
 		},
+		{
+			name:        "single statement LIKE expression",
+			placeholder: nil,
+			s:           statement.New("name", operators.ILIKE("%abc%")).Limit(1).Offset(5),
+			want:        " WHERE name LIKE '%abc%' LIMIT 1 OFFSET 5",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

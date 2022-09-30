@@ -1,14 +1,18 @@
 package statement
 
 import (
+	"github.com/Delisa-sama/stmt-builder/limit"
 	"github.com/Delisa-sama/stmt-builder/nodes"
+	"github.com/Delisa-sama/stmt-builder/offset"
 	"github.com/Delisa-sama/stmt-builder/sort"
 )
 
 // Statement represents tree of nodes that can be translated to query
 type Statement struct {
-	root nodes.Node
-	sort sort.Sort
+	root   nodes.Node
+	sort   sort.Sort
+	limit  limit.Limit
+	offset offset.Offset
 }
 
 // Operator represents operator for construct statement
@@ -39,6 +43,16 @@ func (s Statement) GetRoot() nodes.Node {
 // GetSort returns sort
 func (s Statement) GetSort() sort.Sort {
 	return s.sort
+}
+
+// GetLimit returns the limit
+func (s Statement) GetLimit() limit.Limit {
+	return s.limit
+}
+
+// GetOffset returns the offset
+func (s Statement) GetOffset() offset.Offset {
+	return s.offset
 }
 
 // IsEmpty returns true if statement is empty
@@ -79,5 +93,17 @@ func (s Statement) Sort(columnNames []string, direction sort.Direction) Statemen
 		return s
 	}
 	s.sort = sort.NewSort(columnNames, direction)
+	return s
+}
+
+// Limit returns statement with the limit
+func (s Statement) Limit(l uint) Statement {
+	s.limit = limit.NewLimit(l)
+	return s
+}
+
+// Offset returns statement with the offset
+func (s Statement) Offset(l uint) Statement {
+	s.offset = offset.NewOffset(l)
 	return s
 }
