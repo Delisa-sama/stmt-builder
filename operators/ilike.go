@@ -16,5 +16,5 @@ func ILIKE(value string) statement.Operator {
 
 // Node returns EqNode
 func (o ilike) Node(leftOp string) nodes.Node {
-	return nodes.NewLikeNode(nodes.NewNameNode(leftOp), nodes.NewStringNode(o.value))
+	return nodes.NewILikeNode(nodes.NewNameNode(leftOp), nodes.NewStringNode(o.value))
 }
