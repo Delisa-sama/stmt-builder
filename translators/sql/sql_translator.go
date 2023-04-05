@@ -1,4 +1,4 @@
-package translators
+package sql
 
 import (
 	"fmt"
@@ -11,6 +11,8 @@ import (
 	"github.com/Delisa-sama/stmt-builder/offset"
 	"github.com/Delisa-sama/stmt-builder/sort"
 	"github.com/Delisa-sama/stmt-builder/statement"
+	"github.com/Delisa-sama/stmt-builder/translators/sql/frame"
+	generic_stack "github.com/Delisa-sama/stmt-builder/translators/stack"
 )
 
 // Placeholder represents abstract placeholder for SQL query
@@ -18,8 +20,8 @@ type Placeholder interface {
 	Next() string
 }
 
-// SQLTranslator represents translator from statement to SQL
-type SQLTranslator struct {
+// Translator represents translator from statement to SQL
+type Translator struct {
 	placeholder Placeholder
 }
 
@@ -31,36 +33,31 @@ type Statement interface {
 	GetOffset() offset.Offset
 }
 
-// SQLTranslatorOption represents option for SQLTranslator
-type SQLTranslatorOption func(translator *SQLTranslator)
+// TranslatorOption represents option for Translator
+type TranslatorOption func(translator *Translator)
 
-// WithPlaceholder option to define placeholder for SQLTranslator
-func WithPlaceholder(placeholder Placeholder) SQLTranslatorOption {
-	return func(translator *SQLTranslator) {
+// WithPlaceholder option to define placeholder for Translator
+func WithPlaceholder(placeholder Placeholder) TranslatorOption {
+	return func(translator *Translator) {
 		translator.placeholder = placeholder
 	}
 }
 
-// NewSQLTranslator returns new SQLTranslator
-func NewSQLTranslator(opts ...SQLTranslatorOption) *SQLTranslator {
-	t := &SQLTranslator{}
+// NewTranslator returns new Translator
+func NewTranslator(opts ...TranslatorOption) *Translator {
+	t := &Translator{}
 	for _, opt := range opts {
 		opt(t)
 	}
 	return t
 }
 
-const (
-	openParentheses  = '('
-	closeParentheses = ')'
-)
-
 // GetArgs returns args for SQL query from statement
-func (t *SQLTranslator) GetArgs(s statement.Statement) []interface{} {
+func (t *Translator) GetArgs(s statement.Statement) []interface{} {
 	return t.getArgs(s.GetRoot())
 }
 
-func (t *SQLTranslator) getArgs(node nodes.Node) []interface{} {
+func (t *Translator) getArgs(node nodes.Node) []interface{} {
 	if node == nil {
 		return []interface{}{}
 	}
@@ -85,7 +82,7 @@ func (t *SQLTranslator) getArgs(node nodes.Node) []interface{} {
 }
 
 // Translate translates statement to SQL
-func (t *SQLTranslator) Translate(s Statement) string {
+func (t *Translator) Translate(s Statement) string {
 	queryBuilder := strings.Builder{}
 
 	root := s.GetRoot()
@@ -102,80 +99,27 @@ func (t *SQLTranslator) Translate(s Statement) string {
 	return queryBuilder.String()
 }
 
-func (t *SQLTranslator) translateNode(node nodes.Node) string {
-	if node == nil {
-		return ""
-	}
+func (t *Translator) translateNode(root nodes.Node) string {
+	start := frame.NewFrame(root, nil, 0)
+	stack := generic_stack.Stack[*frame.Frame]{start}
 
-	statementParentheses := false
-	childsParentheses := false
-	switch node.(type) {
-	case nodes.AndNode, nodes.OrNode:
-		statementParentheses = true
-	case nodes.InNode, nodes.NotNode, nodes.NotInNode:
-		childsParentheses = true
-	}
-
-	if nodeWithValue, ok := node.(nodes.NodeWithValue); ok {
-		return nodeWithValue.Accept(t)
-	}
-
-	nodeWithChilds, ok := node.(nodes.NodeWithChilds)
-	if !ok {
-		return node.Accept(t)
-	}
-
-	childs := nodeWithChilds.Childs()
-	// non leaf nodes without childs are useless, ignore it
-	if len(childs) == 0 {
-		return ""
-	}
-
-	queryBuilder := strings.Builder{}
-	if statementParentheses {
-		queryBuilder.WriteRune(openParentheses)
-	}
-	if nodeWithName, ok := node.(nodes.NodeWithName); ok {
-		name := nodeWithName.Name()
-		queryBuilder.WriteString(name.Accept(t))
-	}
-	// unary op
-	if len(childs) == 1 {
-		// TODO: think about exclusive array node translation
-		_, isArrayNode := node.(nodes.ArrayNode)
-		if !isArrayNode {
-			queryBuilder.WriteString(node.Accept(t))
+	for !stack.IsEmpty() {
+		var returnValue string
+		f := stack.Pop()
+		if child := f.GetNextChild(); child != nil {
+			stack.Push(f)
+			stack.Push(child)
+		} else {
+			returnValue = f.TranslateFrame(t)
 		}
-		if childsParentheses {
-			queryBuilder.WriteRune(openParentheses)
-		}
-		queryBuilder.WriteString(t.translateNode(childs[0]))
-		if childsParentheses {
-			queryBuilder.WriteRune(closeParentheses)
-		}
-	}
-	// binary op
-	if len(childs) == 2 {
-		queryBuilder.WriteString(t.translateNode(childs[0]))
-		queryBuilder.WriteString(node.Accept(t))
-		queryBuilder.WriteString(t.translateNode(childs[1]))
-	}
-	// variadic op
-	if len(childs) > 2 {
-		queryBuilder.WriteString(t.translateNode(childs[0]))
-		for _, child := range childs[1:] {
-			queryBuilder.WriteString(node.Accept(t))
-			queryBuilder.WriteString(t.translateNode(child))
-		}
-	}
-	if statementParentheses {
-		queryBuilder.WriteRune(closeParentheses)
+
+		f.PassToParent(returnValue)
 	}
 
-	return queryBuilder.String()
+	return start.Result()
 }
 
-func (t *SQLTranslator) translateSort(s sort.Sort) string {
+func (t *Translator) translateSort(s sort.Sort) string {
 	if s == nil {
 		return ""
 	}
@@ -192,7 +136,7 @@ func (t *SQLTranslator) translateSort(s sort.Sort) string {
 	return sortBuilder.String()
 }
 
-func (t *SQLTranslator) translateLimit(l limit.Limit) string {
+func (t *Translator) translateLimit(l limit.Limit) string {
 	if l == nil {
 		return ""
 	}
@@ -204,7 +148,7 @@ func (t *SQLTranslator) translateLimit(l limit.Limit) string {
 	return limitBuilder.String()
 }
 
-func (t *SQLTranslator) translateOffset(o offset.Offset) string {
+func (t *Translator) translateOffset(o offset.Offset) string {
 	if o == nil {
 		return ""
 	}
@@ -217,17 +161,17 @@ func (t *SQLTranslator) translateOffset(o offset.Offset) string {
 }
 
 // TranslateAndNode translates and node to sql
-func (t *SQLTranslator) TranslateAndNode(node nodes.AndNode) string {
+func (t *Translator) TranslateAndNode(node nodes.AndNode) string {
 	return " AND "
 }
 
 // TranslateArrayNode translates array node to sql
-func (t *SQLTranslator) TranslateArrayNode(node nodes.ArrayNode) string {
+func (t *Translator) TranslateArrayNode(node nodes.ArrayNode) string {
 	return ","
 }
 
 // TranslateEqNode translates EQ node to sql
-func (t *SQLTranslator) TranslateEqNode(node nodes.EqNode) string {
+func (t *Translator) TranslateEqNode(node nodes.EqNode) string {
 	_, isNull := node.Right().(nodes.NullNode)
 	if isNull {
 		return " IS "
@@ -236,42 +180,42 @@ func (t *SQLTranslator) TranslateEqNode(node nodes.EqNode) string {
 }
 
 // TranslateGeNode translates GE node to sql
-func (t *SQLTranslator) TranslateGeNode(node nodes.GeNode) string {
+func (t *Translator) TranslateGeNode(node nodes.GeNode) string {
 	return " >= "
 }
 
 // TranslateGtNode translates GT node to sql
-func (t *SQLTranslator) TranslateGtNode(node nodes.GtNode) string {
+func (t *Translator) TranslateGtNode(node nodes.GtNode) string {
 	return " > "
 }
 
 // TranslateInNode translates In node to sql
-func (t *SQLTranslator) TranslateInNode(node nodes.InNode) string {
+func (t *Translator) TranslateInNode(node nodes.InNode) string {
 	return " IN "
 }
 
 // TranslateNotInNode translates NotIn node to sql
-func (t *SQLTranslator) TranslateNotInNode(_ nodes.NotInNode) string {
+func (t *Translator) TranslateNotInNode(_ nodes.NotInNode) string {
 	return " NOT IN "
 }
 
 // TranslateLeNode translates LE node to sql
-func (t *SQLTranslator) TranslateLeNode(node nodes.LeNode) string {
+func (t *Translator) TranslateLeNode(node nodes.LeNode) string {
 	return " <= "
 }
 
 // TranslateLtNode translates LT node to sql
-func (t *SQLTranslator) TranslateLtNode(node nodes.LtNode) string {
+func (t *Translator) TranslateLtNode(node nodes.LtNode) string {
 	return " < "
 }
 
 // TranslateNameNode translates name node to sql
-func (t *SQLTranslator) TranslateNameNode(node nodes.NameNode) string {
+func (t *Translator) TranslateNameNode(node nodes.NameNode) string {
 	return node.Name()
 }
 
 // TranslateNeNode translates ne node to sql
-func (t *SQLTranslator) TranslateNeNode(node nodes.NeNode) string {
+func (t *Translator) TranslateNeNode(node nodes.NeNode) string {
 	_, isNull := node.Right().(nodes.NullNode)
 	if isNull {
 		return " IS NOT "
@@ -280,22 +224,22 @@ func (t *SQLTranslator) TranslateNeNode(node nodes.NeNode) string {
 }
 
 // TranslateNotNode translates not node to sql
-func (t *SQLTranslator) TranslateNotNode(node nodes.NotNode) string {
+func (t *Translator) TranslateNotNode(node nodes.NotNode) string {
 	return "!"
 }
 
 // TranslateNullNode translates null node to sql
-func (t *SQLTranslator) TranslateNullNode(node nodes.NullNode) string {
+func (t *Translator) TranslateNullNode(node nodes.NullNode) string {
 	return "NULL"
 }
 
 // TranslateOrNode translates or node to sql
-func (t *SQLTranslator) TranslateOrNode(node nodes.OrNode) string {
+func (t *Translator) TranslateOrNode(node nodes.OrNode) string {
 	return " OR "
 }
 
 // TranslateStringNode translates string node to sql
-func (t *SQLTranslator) TranslateStringNode(node nodes.StringNode) string {
+func (t *Translator) TranslateStringNode(node nodes.StringNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
@@ -303,7 +247,7 @@ func (t *SQLTranslator) TranslateStringNode(node nodes.StringNode) string {
 }
 
 // TranslateValueNode translates value node to sql
-func (t *SQLTranslator) TranslateValueNode(node nodes.ValueNode) string {
+func (t *Translator) TranslateValueNode(node nodes.ValueNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
@@ -311,7 +255,7 @@ func (t *SQLTranslator) TranslateValueNode(node nodes.ValueNode) string {
 }
 
 // TranslateTimeNode translates time node to sql
-func (t *SQLTranslator) TranslateTimeNode(node nodes.TimeNode) string {
+func (t *Translator) TranslateTimeNode(node nodes.TimeNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
@@ -319,7 +263,7 @@ func (t *SQLTranslator) TranslateTimeNode(node nodes.TimeNode) string {
 }
 
 // TranslateIntNode translates int node to sql
-func (t *SQLTranslator) TranslateIntNode(n nodes.IntNode) string {
+func (t *Translator) TranslateIntNode(n nodes.IntNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
@@ -327,7 +271,7 @@ func (t *SQLTranslator) TranslateIntNode(n nodes.IntNode) string {
 }
 
 // TranslateFloatNode translates float node to sql
-func (t *SQLTranslator) TranslateFloatNode(n nodes.FloatNode) string {
+func (t *Translator) TranslateFloatNode(n nodes.FloatNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
@@ -335,7 +279,7 @@ func (t *SQLTranslator) TranslateFloatNode(n nodes.FloatNode) string {
 }
 
 // TranslateUintNode translates uint node to SQL
-func (t *SQLTranslator) TranslateUintNode(n nodes.UintNode) string {
+func (t *Translator) TranslateUintNode(n nodes.UintNode) string {
 	if t.placeholder != nil {
 		return t.placeholder.Next()
 	}
@@ -343,7 +287,7 @@ func (t *SQLTranslator) TranslateUintNode(n nodes.UintNode) string {
 }
 
 // TranslateBoolNode translates bool node to SQL
-func (t *SQLTranslator) TranslateBoolNode(n nodes.BoolNode) string {
+func (t *Translator) TranslateBoolNode(n nodes.BoolNode) string {
 	if n {
 		return "TRUE"
 	}
@@ -351,11 +295,11 @@ func (t *SQLTranslator) TranslateBoolNode(n nodes.BoolNode) string {
 }
 
 // TranslateLikeNode translates Like node to SQL
-func (t *SQLTranslator) TranslateLikeNode(n nodes.LikeNode) string {
+func (t *Translator) TranslateLikeNode(n nodes.LikeNode) string {
 	return " LIKE "
 }
 
 // TranslateILikeNode translates ILike node to SQL
-func (t *SQLTranslator) TranslateILikeNode(n nodes.ILikeNode) string {
+func (t *Translator) TranslateILikeNode(n nodes.ILikeNode) string {
 	return " ILIKE "
 }

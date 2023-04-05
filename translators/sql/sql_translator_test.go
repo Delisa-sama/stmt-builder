@@ -1,4 +1,4 @@
-package translators
+package sql
 
 import (
 	"testing"
@@ -100,7 +100,7 @@ func TestSQLTranslator_Translate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			translator := NewSQLTranslator(WithPlaceholder(tt.placeholder))
+			translator := NewTranslator(WithPlaceholder(tt.placeholder))
 			got := translator.Translate(tt.s)
 			assert.Equal(t, tt.want, got)
 		})
@@ -144,7 +144,7 @@ func TestSQLTranslator_GetArgs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			translator := &SQLTranslator{
+			translator := &Translator{
 				placeholder: tt.placeholder,
 			}
 			got := translator.GetArgs(tt.s)

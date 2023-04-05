@@ -8,7 +8,7 @@ import (
 	"github.com/Delisa-sama/stmt-builder/placeholders"
 	"github.com/Delisa-sama/stmt-builder/sort"
 	"github.com/Delisa-sama/stmt-builder/statement"
-	"github.com/Delisa-sama/stmt-builder/translators"
+	"github.com/Delisa-sama/stmt-builder/translators/sql"
 	"github.com/Delisa-sama/stmt-builder/values"
 )
 
@@ -18,8 +18,8 @@ func exampleStmt() {
 		And(statement.New("status", operators.EQ(values.String("active")))).
 		Or(statement.New("deleted_at", operators.NE(values.Null())))
 
-	translator := translators.NewSQLTranslator(
-		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
+	translator := sql.NewTranslator(
+		sql.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
 	fmt.Println(translator.Translate(s))
 	fmt.Println(translator.GetArgs(s))
@@ -32,10 +32,10 @@ func exampleStmt() {
 		).Or(
 		statement.New("status", operators.In(values.Strings("status1"))),
 	)
-	translator = translators.NewSQLTranslator()
+	translator = sql.NewTranslator()
 	fmt.Println(translator.Translate(s))
-	translator = translators.NewSQLTranslator(
-		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
+	translator = sql.NewTranslator(
+		sql.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
 	fmt.Println(translator.Translate(s))
 
@@ -45,21 +45,21 @@ func exampleStmt() {
 			statement.New("created_at", operators.GT(values.Time(time.Now()))).Or(
 				statement.Not(statement.New("status", operators.In(values.Strings("status1", "status2"))))),
 		)
-	translator = translators.NewSQLTranslator()
+	translator = sql.NewTranslator()
 	fmt.Println(translator.Translate(s))
-	translator = translators.NewSQLTranslator(
-		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
+	translator = sql.NewTranslator(
+		sql.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
 	fmt.Println(translator.Translate(s))
 	fmt.Println(translator.GetArgs(s))
 
 	//
 	s = statement.Empty()
-	translator = translators.NewSQLTranslator()
+	translator = sql.NewTranslator()
 	fmt.Println(translator.Translate(s))
 
 	s = statement.Empty().And(statement.New("id", operators.EQ(values.Int(10))))
-	translator = translators.NewSQLTranslator()
+	translator = sql.NewTranslator()
 	// id = 10
 	fmt.Println(translator.Translate(s))
 
@@ -68,8 +68,8 @@ func exampleStmt() {
 	s = statement.New("type", operators.NotIn(values.Strings("archive", "block"))).
 		Sort(sort.By("id"), sort.DESCDirection)
 
-	translator = translators.NewSQLTranslator(
-		translators.WithPlaceholder(placeholders.NewDollarPlaceholder()),
+	translator = sql.NewTranslator(
+		sql.WithPlaceholder(placeholders.NewDollarPlaceholder()),
 	)
 	// type NOT IN ($1,$2)
 	fmt.Println(translator.Translate(s))
